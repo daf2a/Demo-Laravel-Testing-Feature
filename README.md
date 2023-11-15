@@ -13,7 +13,11 @@
     ```
     git clone https://github.com/daf2a/Demo-Laravel-Testing-Feature.git
     ```
-2. Run `composer install`
+2. Run `composer install` at directory project
+3. Copy `.env.example` to `.env`
+4. Run `php artisan migrate`
+5. Run `php artisan key:generate`
+6. Run `php artisan serve`
 
 ## Testing Feature
 
