@@ -35,16 +35,33 @@
     use Illuminate\Foundation\Testing\RefreshDatabase;
     use Tests\TestCase;
     use App\Models\Note;
+    use App\Models\User;
 
     class NoteTest extends TestCase
     {
         use RefreshDatabase;
+        protected $user; 
+        
+        protected function setUp(): void
+        {
+            parent::setUp();
+            $this->user = User::factory()->create();
+        }
 
-        /** @test */
+        protected function tearDown(): void
+        {
+            parent::tearDown();
+            unset($this->user);
+        }
+
+        /** 
+        * @test
+        * @group test1
+        */
         public function a_note_can_be_created()
         {
             $this->withoutExceptionHandling();
-            $response = $this->post('/notes', [
+            $response = $this->actingAs($this->user)->post('/notes', [
                 'note' => 'Test Note'
             ]);
 
@@ -52,17 +69,20 @@
             $this->assertCount(1, Note::all());
         }
 
-        /** @test */
+        /** 
+        * @test
+        * @group test1
+        */
         public function a_note_can_be_updated()
         {
             $this->withoutExceptionHandling();
-            $this->post('/notes', [
+            $this->actingAs($this->user)->post('/notes', [
                 'note' => 'Test Note'
             ]);
 
             $note = Note::first();
 
-            $response = $this->put('/notes/' . $note->id, [
+            $response = $this->actingAs($this->user)->put('/notes/' . $note->id, [
                 'note' => 'Updated Note'
             ]);
 
@@ -70,22 +90,26 @@
             $this->assertEquals('Updated Note', Note::first()->note);
         }
 
-        /** @test */
+        /** 
+        * @test
+        * @group test2
+        */
         public function a_note_can_be_deleted()
         {
             $this->withoutExceptionHandling();
-            $this->post('/notes', [
+            $this->actingAs($this->user)->post('/notes', [
                 'note' => 'Test Note'
             ]);
 
             $note = Note::first();
 
-            $response = $this->delete('/notes/' . $note->id);
+            $response = $this->actingAs($this->user)->delete('/notes/' . $note->id);
 
             $response->assertRedirect('/notes');
             $this->assertCount(0, Note::all());
         }
     }
+
     ```
 3. Update Note Unit Test with this code
     ```
