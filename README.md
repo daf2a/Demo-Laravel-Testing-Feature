@@ -7,60 +7,120 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+## Setup
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. Clone this repository
+    ```
+    git clone https://github.com/daf2a/Demo-Laravel-Testing-Feature.git
+    ```
+2. Run `composer install`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Testing Feature
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Make Feature Test and Unit Test
+    ```
+    php artisan make:test NoteTest
+    php artisan make:test NoteUnitTest --unit
+    ```
+2. Update NoteTest Feature with this code
+    ```
+    <?php
 
-## Learning Laravel
+    namespace Tests\Feature;
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Tests\TestCase;
+    use App\Models\Note;
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+    class NoteTest extends TestCase
+    {
+        use RefreshDatabase;
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+        /** @test */
+        public function a_note_can_be_created()
+        {
+            $this->withoutExceptionHandling();
+            $response = $this->post('/notes', [
+                'note' => 'Test Note'
+            ]);
 
-## Laravel Sponsors
+            $response->assertRedirect('/notes');
+            $this->assertCount(1, Note::all());
+        }
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+        /** @test */
+        public function a_note_can_be_updated()
+        {
+            $this->withoutExceptionHandling();
+            $this->post('/notes', [
+                'note' => 'Test Note'
+            ]);
 
-### Premium Partners
+            $note = Note::first();
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+            $response = $this->put('/notes/' . $note->id, [
+                'note' => 'Updated Note'
+            ]);
 
-## Contributing
+            $response->assertRedirect('/notes/' . $note->id);
+            $this->assertEquals('Updated Note', Note::first()->note);
+        }
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+        /** @test */
+        public function a_note_can_be_deleted()
+        {
+            $this->withoutExceptionHandling();
+            $this->post('/notes', [
+                'note' => 'Test Note'
+            ]);
 
-## Code of Conduct
+            $note = Note::first();
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+            $response = $this->delete('/notes/' . $note->id);
 
-## Security Vulnerabilities
+            $response->assertRedirect('/notes');
+            $this->assertCount(0, Note::all());
+        }
+    }
+    ```
+3. Update Note Unit Test with this code
+    ```
+    <?php
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    namespace Tests\Unit;
 
-## License
+    use Illuminate\Foundation\Testing\RefreshDatabase;
+    use Tests\TestCase;
+    use App\Models\Note;
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    class NoteUnitTest extends TestCase
+    {
+        use RefreshDatabase; 
+
+        /** @test */
+        public function it_can_create_a_note()
+        {
+            $noteData = [
+                'note' => 'This is a test note.'
+            ];
+
+            $note = Note::create($noteData);
+
+            $this->assertInstanceOf(Note::class, $note);
+            $this->assertEquals($noteData['note'], $note->note);
+        }
+
+        /** @test */
+        public function it_requires_note_field()
+        {
+            // Example Fail
+            // $note = Note::create(['note' => null]);
+            // $this->assertNull($note);
+
+            // Example Pass
+            $note = Note::create(['note' => 'is not null']);
+            $this->assertNotNull($note);
+        }
+    }
+    ```
+4. Run `php artisan test` for testing
