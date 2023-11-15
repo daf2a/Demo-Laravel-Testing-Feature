@@ -46,12 +46,14 @@
         {
             parent::setUp();
             $this->user = User::factory()->create();
+            // var_dump("awal");
         }
 
         protected function tearDown(): void
         {
             parent::tearDown();
             unset($this->user);
+            // var_dump("akhir");
         }
 
         /** 
@@ -60,6 +62,7 @@
         */
         public function a_note_can_be_created()
         {
+            // var_dump("create");
             $this->withoutExceptionHandling();
             $response = $this->actingAs($this->user)->post('/notes', [
                 'note' => 'Test Note'
@@ -75,6 +78,7 @@
         */
         public function a_note_can_be_updated()
         {
+            // var_dump("update");
             $this->withoutExceptionHandling();
             $this->actingAs($this->user)->post('/notes', [
                 'note' => 'Test Note'
@@ -96,6 +100,7 @@
         */
         public function a_note_can_be_deleted()
         {
+            // var_dump("delete");
             $this->withoutExceptionHandling();
             $this->actingAs($this->user)->post('/notes', [
                 'note' => 'Test Note'
@@ -109,7 +114,6 @@
             $this->assertCount(0, Note::all());
         }
     }
-
     ```
 3. Update Note Unit Test with this code
     ```
